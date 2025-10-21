@@ -4,9 +4,10 @@ import Home from '../views/Home.vue'
 import HelloWorldPage from '../views/HelloWorldPage.vue'
 import Recursos from '../views/Recursos.vue'
 import Solucoes from '../views/Solucoes.vue'
-import Login from '../views/Login.vue'           // <-- novo
-import RegistreSe from '../views/RegistreSe.vue' // <-- novo
+import Login from '../views/Login.vue'
+import RegistreSe from '../views/RegistreSe.vue'
 import Marketing from '../views/Marketing.vue'
+import PerfilUsuario from '../views/PerfilUsuario.vue' // ✅ Importação adicionada
 
 const routes = [
   {
@@ -48,6 +49,11 @@ const routes = [
     path: '/marketing',
     name: 'Marketing',
     component: Marketing
+  },
+  {
+    path: '/perfil',
+    name: 'Perfil',
+    component: PerfilUsuario // ✅ Nova rota para a página de perfil
   }
 ]
 

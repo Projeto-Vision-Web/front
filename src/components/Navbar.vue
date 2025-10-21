@@ -7,8 +7,8 @@
 
     <div class="right-buttons">
       <router-link to="/login" class="btn-login">Login</router-link>
-      <!-- Novo botão para Marketing -->
       <router-link to="/marketing" class="btn-login">Marketing</router-link>
+      <router-link to="/perfil" class="btn-login">Perfil</router-link>
     </div>
   </nav>
 </template>
