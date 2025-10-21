@@ -9,6 +9,7 @@
       <router-link to="/login" class="btn-login">Login</router-link>
       <router-link to="/marketing" class="btn-login">Marketing</router-link>
       <router-link to="/perfil" class="btn-login">Perfil</router-link>
+      <router-link to="/form-admin" class="btn-login">pesquisas</router-link>
     </div>
   </nav>
 </template>

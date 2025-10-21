@@ -8,6 +8,7 @@ import Login from '../views/Login.vue'
 import RegistreSe from '../views/RegistreSe.vue'
 import Marketing from '../views/Marketing.vue'
 import PerfilUsuario from '../views/PerfilUsuario.vue' // ✅ Importação adicionada
+import FormAdmin from '../views/FormAdmin.vue'
 
 const routes = [
   {
@@ -54,7 +55,12 @@ const routes = [
     path: '/perfil',
     name: 'Perfil',
     component: PerfilUsuario // ✅ Nova rota para a página de perfil
-  }
+  },
+  {
+    path: '/form-admin',
+    name: 'Admin-Colaborador',
+    component: FormAdmin
+  },
 ]
 
 const router = createRouter({
