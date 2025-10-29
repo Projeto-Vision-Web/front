@@ -399,25 +399,26 @@ const tabs = ref([
   justify-content: center;
   box-shadow: 0 10px 60px rgba(0,0,0,0.6), 0 0 40px rgba(112, 73, 250, 0.2);
   border: 1px solid rgba(112, 73, 250, 0.3);
+  background-color: transparent;
 }
 
 .highlight-bg {
   position: absolute;
   inset: 0;
   background: url("/background.png") center/cover no-repeat;
-  z-index: -2;
+  z-index: 1;
 }
 
 .highlight-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(to right, rgba(13,13,13,0.9), rgba(13,13,13,0.7), transparent);
-  z-index: -1;
+  z-index: 2;
 }
 
 .highlight-content {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   text-align: center;
   color: #fff;
   padding: 0 2rem;
