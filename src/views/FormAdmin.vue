@@ -1,12 +1,5 @@
 <template>
   <div id="app">
-    <header class="header">
-      <div class="header-left">
-        <img src="../assets/LogoFinal.png" alt="Logo" class="logo" width="40" height="40">
-        <h2 class="header-title">VisionWeb</h2>
-      </div>
-    </header>
-
     <main class="container">
 
       <section v-if="currentScreen === 'access'" class="access-page-content">
@@ -25,14 +18,16 @@
               :class="['profile-btn', { 'active': profile === 'admin' }]" 
               @click="selectProfile('admin')"
             >
-              <i class="fas fa-user-shield"></i> Administrador
+              <img src="../assets/do-utilizador.png" alt="Admin" class="profile-btn-icon">
+              Administrador
             </button>
             
             <button 
               :class="['profile-btn', { 'active': profile === 'collaborator' }]" 
               @click="selectProfile('collaborator')"
             >
-              <i class="fas fa-users"></i> Colaborador
+              <img src="../assets/coordenacao.png" alt="Colaborador" class="profile-btn-icon">
+              Colaborador
             </button>
           </div>
         </div>
@@ -44,9 +39,15 @@
                   <h2>Gerenciar Pesquisas</h2>
                   <p>Crie e gerencie pesquisas de clima organizacional</p>
                 </div>
-                <button class="action-btn primary" @click="openCreateSurveyModal">
-                  <i class="fas fa-plus"></i> Nova Pesquisa
-                </button>
+                
+                <div class="dashboard-header-right">
+                  <button class="action-btn primary" @click="goToReportsPage">
+                    <i class="fas fa-chart-pie"></i> Relatórios
+                  </button>
+                  <button class="action-btn primary" @click="openCreateSurveyModal">
+                    <i class="fas fa-plus"></i> Nova Pesquisa
+                  </button>
+                </div>
               </div>
 
               <div class="stacked-survey-card">
@@ -71,6 +72,7 @@
                         <span><i class="fas fa-question-circle"></i> {{ survey.questions.length }} perguntas</span>
                       </div>
                     </div>
+                    
                     <div class="survey-actions">
                       <button 
                           class="icon-btn" 
@@ -224,53 +226,19 @@
       </transition>
       
       <transition name="modal">
-        <div v-if="isViewingReport" class="modal-overlay">
-            <div class="card create-survey-card modal-content report-modal">
-                <button class="close-modal-btn" @click="closeReportModal"><i class="fas fa-times"></i></button>
-
-                <div class="modal-title-group" v-if="currentReportSurvey">
-                    <h2>Relatório: {{ currentReportSurvey.title }}</h2>
-                    <p>Análise consolidada de **{{ currentReportSurvey.responses }}** respostas</p>
-                    <span :class="['status-tag large', currentReportSurvey.status.toLowerCase()]">{{ currentReportSurvey.status }}</span>
-                </div>
-
-                <div class="report-content" v-if="currentReportSurvey">
-                    <div v-for="(question, index) in currentReportSurvey.questions" :key="index" class="report-question-item">
-                        <h4>{{ index + 1 }}. {{ question.text }}</h4>
-                        <span class="q-type-tag">{{ question.typeDisplay }}</span>
-                        
-                        <div class="response-display">
-                            <p class="real-data-placeholder">
-                                Dados reais de **{{ currentReportSurvey.responses }}** respostas seriam exibidos aqui.
-                            </p>
-                            
-                            <p v-if="question.type === 'text'" class="text-insights">
-                                Insights de Texto Livre (Exemplo): 45 menções à palavra "Melhoria".
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="action-buttons-footer report-footer">
-                    <button class="action-btn purple-gradient" @click="closeReportModal">
-                        Fechar Relatório
-                    </button>
-                </div>
-            </div>
-        </div>
-      </transition>
-      
-      <transition name="modal">
         <div v-if="isResponding" class="modal-overlay">
             <div class="card create-survey-card modal-content response-modal">
                 <button class="close-modal-btn" @click="closeResponseModal"><i class="fas fa-times"></i></button>
 
                 <div class="modal-title-group" v-if="currentSurveyToRespond">
-                    <h2>Responder: {{ currentSurveyToRespond.title }}</h2>
-                    <p>Sua opinião é valiosa para o clima organizacional.</p>
+                    <h2 v-if="!isPreviewingSurvey">Responder: {{ currentSurveyToRespond.title }}</h2>
+                    <h2 v-if="isPreviewingSurvey">Visualizar: {{ currentSurveyToRespond.title }}</h2>
+                    
+                    <p v-if="!isPreviewingSurvey">Sua opinião é valiosa para o clima organizacional.</p>
+                    <p v-if="isPreviewingSurvey">Visualização da pesquisa como Administrador.</p>
                 </div>
 
-                <div class="survey-form-content" v-if="currentSurveyToRespond">
+                <fieldset :disabled="isPreviewingSurvey" class="survey-form-content" v-if="currentSurveyToRespond">
                     <div v-for="(question, index) in currentSurveyToRespond.questions" :key="index" class="question-item form-group">
                         <label :for="'q-' + (index + 1)">
                             {{ index + 1 }}. {{ question.text }} 
@@ -314,14 +282,20 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </fieldset>
 
-                <div class="action-buttons-footer">
+                <div v-if="!isPreviewingSurvey" class="action-buttons-footer">
                     <button class="action-btn secondary" @click="closeResponseModal">
                         <i class="fas fa-arrow-left"></i> Cancelar
                     </button>
                     <button class="action-btn primary" @click="submitResponses">
                         <i class="fas fa-check-circle"></i> Enviar Respostas
+                    </button>
+                </div>
+
+                <div v-if="isPreviewingSurvey" class="action-buttons-footer preview-footer">
+                    <button class="action-btn purple-gradient" @click="closeResponseModal">
+                        <i class="fas fa-times"></i> Fechar Visualização
                     </button>
                 </div>
             </div>
@@ -333,18 +307,20 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect } from 'vue';
+// LÓGICA DE SCRIPT ATUALIZADA
+import { ref, computed, watchEffect, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router'; 
 
 // --- ESTADOS DE NAVEGAÇÃO E DADOS ---
 const currentScreen = ref('access'); 
 const profile = ref('admin'); // 'admin' ou 'collaborator'
 const isCreatingSurvey = ref(false); 
-const isViewingReport = ref(false); 
-const currentReportSurvey = ref(null); 
 
 const isResponding = ref(false); 
 const currentSurveyToRespond = ref(null); 
 const collaboratorResponses = ref({}); 
+
+const isPreviewingSurvey = ref(false);
 
 // ID da pesquisa sendo editada. null = criando nova.
 const editingSurveyId = ref(null);
@@ -408,6 +384,45 @@ watchEffect(() => {
 
 
 // --- LÓGICA DE NAVEGAÇÃO E PERFIS ---
+
+const router = useRouter(); // <--- O useRouter ESTÁ AQUI
+const showProfileDropdown = ref(false);
+
+// Fecha o dropdown
+const closeProfileDropdown = () => {
+  showProfileDropdown.value = false;
+};
+
+// Alterna o dropdown
+const toggleProfileDropdown = () => {
+  showProfileDropdown.value = !showProfileDropdown.value;
+};
+
+// Navega para o perfil e fecha o dropdown
+const goToProfile = () => {
+  router.push('/perfil');
+  closeProfileDropdown();
+};
+
+// Faz logout (navega para login) e fecha o dropdown
+const logout = () => {
+  router.push('/login');
+  closeProfileDropdown();
+};
+
+// Lógica para fechar o dropdown ao clicar fora (no 'document')
+onMounted(() => {
+  document.addEventListener('click', closeProfileDropdown);
+});
+onUnmounted(() => {
+  document.removeEventListener('click', closeProfileDropdown);
+});
+
+const goToReportsPage = () => {
+  alert('Página de Relatórios Gerais (em construção)');
+  // No futuro, isso será: router.push('/relatorios-gerais');
+};
+
 const selectProfile = (p) => {
     profile.value = p;
 };
@@ -432,14 +447,8 @@ const closeCreateSurveyModal = () => {
     editingSurveyId.value = null; 
 };
 
-const closeReportModal = () => {
-    isViewingReport.value = false;
-    currentReportSurvey.value = null;
-};
-
 // Abre modal para edição
 const openEditSurveyModal = (survey) => {
-    // Deep copy (cópia profunda) para não alterar o objeto original antes de salvar
     newSurvey.value = JSON.parse(JSON.stringify(survey));
     editingSurveyId.value = survey.id; 
     isCreatingSurvey.value = true; 
@@ -448,12 +457,10 @@ const openEditSurveyModal = (survey) => {
 // Controla o que acontece ao clicar no card
 const openSurveyDetails = (survey) => {
     if (survey.status === 'Rascunho') {
-        // Se for rascunho, clica para editar
         openEditSurveyModal(survey);
     } else {
-        // Se for Ativa ou Finalizada, abre o relatório
-        currentReportSurvey.value = survey;
-        isViewingReport.value = true;
+        openResponseModal(survey); 
+        isPreviewingSurvey.value = true; 
     }
 };
 
@@ -519,7 +526,6 @@ const saveSurvey = (status) => {
         return;
     }
     
-    // Validação de perguntas e opções
     const questionsToSave = newSurvey.value.questions.filter(q => {
         if (q.text.trim() === '') return false;
         if (q.type === 'multiple') {
@@ -533,19 +539,15 @@ const saveSurvey = (status) => {
         return;
     }
 
-    // LÓGICA DE EDIÇÃO vs CRIAÇÃO
     if (editingSurveyId.value) {
-        // Modo de Edição
         const surveyIndex = surveys.value.findIndex(s => s.id === editingSurveyId.value);
         if (surveyIndex !== -1) {
-            // Mantém ID e data de criação, atualiza o resto
             surveys.value[surveyIndex].title = newSurvey.value.title;
             surveys.value[surveyIndex].questions = questionsToSave;
-            surveys.value[surveyIndex].status = status; // Pode ser 'Rascunho' ou 'Ativa'
+            surveys.value[surveyIndex].status = status; 
             alert(`Pesquisa "${newSurvey.value.title}" atualizada com sucesso como ${status}.`);
         }
     } else {
-        // Modo de Criação
         const now = new Date();
         const dateString = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
 
@@ -572,47 +574,38 @@ const publishSurvey = () => {
 
 // --- LÓGICA DE RESPOSTA DO COLABORADOR (Estrutura) ---
 const openResponseModal = (survey) => {
-    // 1. Define a pesquisa a ser respondida
     currentSurveyToRespond.value = survey;
+    isPreviewingSurvey.value = false;
     
-    // 2. Inicializa as respostas
     const initialResponses = {};
     survey.questions.forEach((q, index) => {
         const qId = index + 1; 
         if (q.type === 'scale') {
-            // Alterado para iniciar com null (desmarcado)
             initialResponses[qId] = null; 
         } else {
-            initialResponses[qId] = ''; // Vazio para múltipla e texto
+            initialResponses[qId] = ''; 
         }
     });
     collaboratorResponses.value = initialResponses;
     
-    // 3. Abre o Modal
     isResponding.value = true;
 };
 
-// CORREÇÃO: Implementação da função para fechar o modal de resposta
 const closeResponseModal = () => {
     isResponding.value = false;
     currentSurveyToRespond.value = null;
-    collaboratorResponses.value = {}; // Limpa as respostas
+    collaboratorResponses.value = {}; 
+    isPreviewingSurvey.value = false; 
 };
 
-// CORREÇÃO: Implementação do fechamento automático do modal após submissão.
 const submitResponses = () => {
     if (!currentSurveyToRespond.value) return;
 
-    // Lógica básica de validação (Garantir que todas as perguntas foram respondidas)
     const totalQuestions = currentSurveyToRespond.value.questions.length;
     
     const answeredCount = Object.values(collaboratorResponses.value).filter(val => {
-        // Checa se é string e está vazia (texto, múltipla)
         if (typeof val === 'string' && val.trim() === '') return false;
-        // Checa se é nulo ou indefinido
         if (val === null || val === undefined) return false;
-        
-        // Se for um número (escala), é válido.
         return true;
     }).length;
 
@@ -621,16 +614,13 @@ const submitResponses = () => {
         return;
     }
 
-    // SIMULAÇÃO DE GRAVAÇÃO (Backend)
     const surveyIndex = surveys.value.findIndex(s => s.id === currentSurveyToRespond.value.id);
     if (surveyIndex !== -1) {
-        // Incrementa o contador de respostas
         surveys.value[surveyIndex].responses++; 
     }
     
     alert(`Obrigado! Sua resposta para "${currentSurveyToRespond.value.title}" foi enviada com sucesso!`);
     
-    // CORREÇÃO: Fecha o modal após o envio
     closeResponseModal();
 };
 </script>
@@ -674,51 +664,14 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 2rem;
-  padding-top: 100px; 
+  padding-top: 100px; /* <<<<< Espaço para o Header Fixo */
 }
 
-/* ============== HEADER FIXO (mantido) ============== */
-.header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 70px;
-  padding: 1rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  background: rgba(13, 13, 13, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  z-index: 1000;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-}
+/* ============== HEADER FIXO (REMOVIDO DESTE ARQUIVO) ============== */
+/* Todo o CSS .header, .header-left, .logo, .header-title foi movido para MainNavbar.vue */
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-}
-
-.logo {
-  flex-shrink: 0;
-  filter: drop-shadow(0 0 5px rgba(49, 62, 248, 0.5));
-}
-
-.header-title {
-  margin: 0;
-  font-size: 1.8rem;
-  font-weight: bold;
-  background: var(--color-primary-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 30px rgba(112, 73, 250, 0.3);
-}
 
 /* ============== HERO ACCESS SECTION (Containers principais) ============== */
-/* NOVO: ANIMAÇÃO DE BRILHO PULSANTE (Hero Card) */
 @keyframes neon-pulse {
     0% { box-shadow: 0 10px 60px rgba(0,0,0,0.6), 0 0 30px rgba(49, 62, 248, 0.2); }
     50% { box-shadow: 0 10px 60px rgba(0,0,0,0.8), 0 0 50px rgba(49, 62, 248, 0.4); }
@@ -736,12 +689,11 @@ body {
 }
 
 .header-titles {
-    margin-bottom: 50px; /* Espaço entre o título e a caixa de acesso */
+    margin-bottom: 50px; 
 }
 
-/* Estilos para o novo Hero Banner */
 .hero-vision-title.large-title {
-    font-size: 3.5em; /* Aumenta consideravelmente */
+    font-size: 3.5em; 
     font-weight: 800;
     margin: 0;
     background: var(--color-primary-gradient);
@@ -752,14 +704,12 @@ body {
 
 .hero-vision-subtitle.large-subtitle {
     color: var(--color-text-secondary);
-    font-size: 1.3em; /* Aumenta o subtítulo */
+    font-size: 1.3em; 
     margin-top: 10px;
 }
-/* FIM DA NOVA ESTRUTURA DE ACESSO */
-
 
 .hero-card {
-  display: none; /* Hero Card antigo removido */
+  display: none; 
 }
 
 .access-system-box {
@@ -770,14 +720,13 @@ body {
     max-width: 400px; 
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
     border: 1px solid #333;
-    transition: all 0.3s ease; /* Transição para o novo efeito */
+    transition: all 0.3s ease; 
 }
 
-/* NOVO: Efeito de Borda Acendendo na Caixa de Acesso */
 .access-system-box:hover,
 .access-system-box:focus-within { 
     border: 1px solid #7049fa; 
-    box-shadow: 0 0 15px rgba(112, 73, 250, 0.5); /* Brilho sutil */
+    box-shadow: 0 0 15px rgba(112, 73, 250, 0.5); 
 }
 
 .access-system-box h2 {
@@ -810,17 +759,34 @@ body {
   font-size: 1em;
   font-weight: 500;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; 
 }
 
-.profile-btn i {
-    margin-right: 8px;
+/* INÍCIO DA MUDANÇA: Estilo para os ícones de botão de perfil */
+.profile-btn-icon {
+  width: 24px; /* Aumentado de 22px para 24px */
+  height: 24px; /* Aumentado de 22px para 24px */
+  filter: invert(1) brightness(0.8); 
+  opacity: 0.8;
+  transition: all 0.3s;
 }
 
-/* NOVO: BRILHO INTENSO NOS BOTÕES DE PERFIL */
+.profile-btn.active .profile-btn-icon,
+.profile-btn:hover:not(:disabled) .profile-btn-icon {
+  filter: invert(1) brightness(1);
+  opacity: 1;
+}
+/* FIM DA MUDANÇA */
+
+
 .profile-btn.active, .profile-btn:hover:not(:disabled) {
   background: var(--color-primary-gradient);
   border-color: #7049fa;
-  box-shadow: 0 0 25px var(--color-primary-shadow), 0 0 5px rgba(255, 255, 255, 0.5); /* Sombra mais forte */
+  box-shadow: 0 0 25px var(--color-primary-shadow), 0 0 5px rgba(255, 255, 255, 0.5); 
   transform: translateY(-2px);
 }
 
@@ -848,6 +814,12 @@ body {
   margin-bottom: 30px;
   padding: 0 5px;
 }
+
+.dashboard-header-right {
+  display: flex;
+  gap: 15px; 
+}
+
 
 .dashboard-header .header-content-left {
   display: flex;
@@ -884,7 +856,6 @@ body {
   box-shadow: 0 5px 15px rgba(112, 73, 250, 0.4);
 }
 
-/* Botão pequeno para responder (Colaborador) */
 .action-btn.small-btn {
     padding: 8px 15px;
     font-size: 0.9em;
@@ -901,7 +872,6 @@ body {
   color: var(--color-bg-dark);
 }
 
-/* Novo estilo para o botão 'Salvar Rascunho' da referência (roxo/azul) */
 .action-btn.purple-gradient {
     background: linear-gradient(90deg, #4f46e5, #8a2be2);
     color: var(--color-text-light);
@@ -916,27 +886,23 @@ body {
 
 /* LISTA DE PESQUISAS EMPILHADAS */
 .stacked-survey-card {
-    /* Estilo de Card: Fundo escuro, bordas arredondadas e sombra */
     background-color: rgba(31, 31, 31, 0.95);
     border-radius: 12px;
-    padding: 10px; /* Padding interno para visualização */
+    padding: 10px; 
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .survey-list {
-    /* Define a altura máxima para mostrar apenas 4 itens + rolagem */
-    max-height: 500px; /* Altura ajustada para mostrar ~4 itens visíveis */
-    overflow-y: auto; /* A CHAVE: Permite a rolagem interna */
-    padding: 10px 0; /* Padding sutil para a lista de rolagem */
+    max-height: 500px; 
+    overflow-y: auto; 
+    padding: 10px 0; 
     
-    /* Estilizando a barra de rolagem para Dark Mode */
     scrollbar-color: #7049fa #1a1a1a;
     scrollbar-width: thin;
     transition: all 0.2s;
 }
 
-/* Estilo para o CARD DA PESQUISA ser clicável */
 .survey-item {
   background-color: var(--color-bg-card);
   border-radius: 12px;
@@ -944,52 +910,48 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* NOVO: Borda lateral transparente para o efeito de destaque */
   border-left: 5px solid transparent; 
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-  margin-bottom: 10px; /* Reduz espaçamento entre itens na lista rolante */
-  /* Remove a borda superior do survey-item para dar a sensação de itens "empilhados" */
+  margin-bottom: 10px; 
   border-top: 1px solid rgba(255, 255, 255, 0.05); 
   border-right: 1px solid rgba(255, 255, 255, 0.05);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  cursor: pointer; /* Indica que o card é clicável */
+  cursor: pointer; 
   transition: all 0.3s;
 }
 
-/* NOVO: Efeito de borda lateral neon no hover */
 .survey-item:hover {
     background-color: rgba(31, 31, 31, 0.95); 
     transform: translateY(-2px);
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8), 0 0 10px rgba(112, 73, 250, 0.3);
-    border-left-color: #7049fa; /* Destaca a borda esquerda com a cor primária */
+    border-left-color: #7049fa; 
 }
 
-/* NOVO: Garante que o conteúdo de informação ocupe o espaço e se alinhe à esquerda */
 .survey-info {
     display: flex;
     flex-direction: column;
-    align-items: flex-start; /* **CHAVE**: Alinha todo o conteúdo de informação à esquerda */
-    flex-grow: 1; /* Permite que o bloco de informações ocupe a maior parte do espaço */
-    padding-right: 20px; /* Adiciona um espaço antes das ações */
+    align-items: flex-start; 
+    flex-grow: 1; 
+    padding-right: 20px; 
 }
 
 .survey-info h3 {
-    margin-bottom: 5px; /* Adiciona espaço abaixo do título */
+    margin-bottom: 5px; 
 }
 
 .survey-info .subtitle {
-    margin-top: 5px; /* Adiciona espaço abaixo do subtítulo */
+    margin-top: 5px; 
 }
 
 .survey-info h3, 
 .survey-info .subtitle {
-    text-align: left; /* Garante que o texto dentro se alinhe à esquerda */
+    text-align: left; 
 }
 
 .survey-actions {
     display: flex;
     gap: 10px;
-    flex-shrink: 0; /* Garante que os botões não encolham */
+    flex-shrink: 0; 
 }
 
 .status-tag {
@@ -1013,46 +975,49 @@ body {
   margin-top: 10px;
 }
 
-/* Estilo para os botões de ação nos cards de pesquisa */
 .icon-btn {
-  background: var(--color-secondary-btn); /* Cor de fundo mais escura para aumentar a área clicável */
+  background: var(--color-secondary-btn); 
   border: 1px solid #333;
   color: var(--color-text-secondary);
   cursor: pointer;
-  padding: 8px; /* Reduzir o padding para acomodar a imagem menor */
+  padding: 8px; 
   border-radius: 6px;
   font-size: 1em;
   transition: all 0.2s;
   
-  /* Flexbox para centralizar o conteúdo (a imagem) */
   display: flex;
   justify-content: center;
   align-items: center;
   
-  /* Definir um tamanho fixo para o botão */
   width: 40px; 
   height: 40px;
 }
 
-/* NOVO ESTILO: Dimensiona as imagens dentro dos botões de ícone */
 .icon-btn img {
-    width: 24px; /* Tamanho de ícone adequado */
+    width: 24px; 
     height: 24px;
-    filter: invert(70%) saturate(200%); /* Cor cinza/clara suave */
+    filter: invert(70%) saturate(200%); 
     transition: filter 0.2s;
     vertical-align: middle; 
 }
 
+.icon-btn i {
+    color: var(--color-text-secondary);
+    transition: color 0.2s;
+}
+
 .icon-btn:hover {
-  border-color: #7049fa; /* Borda primária no hover */
-  background-color: #1a1a1a; /* Fundo um pouco mais escuro */
-  
-  /* Efeito Neon no hover */
+  border-color: #7049fa; 
+  background-color: #1a1a1a; 
   box-shadow: 0 0 15px var(--color-primary-shadow); 
 }
 
 .icon-btn:hover img {
-    filter: invert(100%) saturate(100%); /* Deixa o ícone branco puro no hover */
+    filter: invert(100%) saturate(100%); 
+}
+
+.icon-btn:hover i {
+    color: var(--color-text-light);
 }
 
 
@@ -1063,8 +1028,8 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Overlay menos escuro */
-    backdrop-filter: blur(5px); /* Efeito Embaçado AQUI */
+    background-color: rgba(0, 0, 0, 0.5); 
+    backdrop-filter: blur(5px); 
     -webkit-backdrop-filter: blur(5px);
     display: flex;
     justify-content: center;
@@ -1083,63 +1048,6 @@ body {
     padding: 30px; 
 }
 
-/* Estilos específicos para o Modal de Relatório */
-.report-modal {
-    max-width: 850px;
-}
-
-.report-modal .status-tag.large {
-    font-size: 0.9em;
-    margin-top: 10px;
-    display: inline-block;
-    margin-left: 0; /* Remove margem extra */
-}
-
-.report-question-item {
-    background-color: rgba(31, 31, 31, 0.5);
-    border-radius: 8px;
-    padding: 15px;
-    margin-top: 20px;
-    border: 1px solid #444;
-}
-
-.report-question-item h4 {
-    margin-bottom: 5px;
-    color: var(--color-text-light);
-}
-
-.report-question-item .q-type-tag {
-    margin-bottom: 15px;
-    display: inline-block;
-}
-
-/* NOVO ESTILO PARA O PLACEHOLDER DE DADOS REAIS */
-.real-data-placeholder, .no-data-report {
-    padding: 10px;
-    border: 1px dashed #7049fa;
-    border-radius: 4px;
-    background-color: rgba(112, 73, 250, 0.1);
-    color: #a855f7;
-    font-style: italic;
-    font-size: 0.9em;
-    margin-top: 10px;
-}
-
-.text-insights {
-    font-style: italic;
-    color: #7049fa;
-    margin-top: 15px;
-    padding-top: 10px;
-    border-top: 1px dashed #333;
-    font-size: 0.9em;
-}
-
-.report-footer {
-    justify-content: center;
-}
-/* FIM DOS ESTILOS DO RELATÓRIO */
-
-
 .close-modal-btn {
     position: absolute;
     top: 20px;
@@ -1157,7 +1065,6 @@ body {
     color: #ff4d4d;
 }
 
-/* Estilos de Transição (Opcional, mas melhora a experiência) */
 .modal-enter-active, .modal-leave-active {
     transition: opacity 0.3s ease;
 }
@@ -1166,7 +1073,6 @@ body {
     opacity: 0;
 }
 
-/* Transição para a troca de Dashboards (Admin/Collaborator) */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
     transition: opacity 0.3s ease, transform 0.3s ease;
@@ -1182,7 +1088,6 @@ body {
     transform: translateY(-10px);
 }
 
-/* Títulos do Modal - Estilo mais sóbrio */
 .modal-title-group h2 {
     font-size: 1.8rem;
     color: var(--color-text-light); 
@@ -1217,7 +1122,6 @@ body {
     gap: 8px;
 }
 
-/* Estilização isolada para os botões de tipo de pergunta */
 .question-type-buttons .type-btn {
     padding: 8px 15px;
     font-size: 0.9em;
@@ -1257,7 +1161,6 @@ body {
     border: 1px solid #444;
 }
 
-/* Botões de Ação no Rodapé */
 .action-buttons-footer {
     display: flex;
     justify-content: flex-end;
@@ -1309,33 +1212,30 @@ body {
     align-items: center;
 }
 
-/* Ajustes no botão de remover opção (que agora é um icon-btn) */
 .remove-option-btn {
-    /* Agora é um botão de ícone completo */
     width: 30px;
     height: 30px;
     padding: 5px;
-    background-color: #333; /* Fundo escuro sutil */
+    background-color: #333; 
     border-color: #ff4d4d;
     transition: all 0.2s;
 }
 
 .remove-option-btn img {
-    width: 14px; /* Imagem menor para o contexto de opção */
+    width: 14px; 
     height: 14px;
-    /* Faz o ícone de deletar ficar Vermelho */
     filter: invert(40%) sepia(90%) saturate(1000%) hue-rotate(330deg); 
     transition: filter 0.2s;
 }
 
 .remove-option-btn:hover {
-    background-color: #ff4d4d; /* Fundo vermelho no hover */
+    background-color: #ff4d4d; 
     box-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
     border-color: #ff4d4d;
 }
 
 .remove-option-btn:hover img {
-    filter: invert(100%); /* Deixa o ícone branco no hover */
+    filter: invert(100%); 
 }
 
 
@@ -1378,6 +1278,49 @@ body {
 
 .survey-form-content {
     padding-bottom: 20px;
+    border: none; 
+}
+
+/* Estilos para o modo de visualização (read-only) */
+.survey-form-content:disabled {
+    opacity: 0.7;
+    background: none; 
+}
+
+.survey-form-content:disabled .text-input,
+.survey-form-content:disabled .option-radio-item input[type="radio"] + label,
+.survey-form-content:disabled .scale-radio-item label {
+  color: #a8a8a8;
+  cursor: not-allowed;
+}
+
+.survey-form-content:disabled .option-radio-item,
+.survey-form-content:disabled .scale-radio-options {
+    background-color: #111; 
+}
+
+.survey-form-content:disabled .option-radio-item input[type="radio"],
+.survey-form-content:disabled .scale-radio-item input[type="radio"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.survey-form-content:disabled .option-radio-item:hover,
+.survey-form-content:disabled .scale-radio-item:hover {
+  /* Remove o efeito de hover no modo preview */
+  border-color: #333;
+  transform: none;
+  box-shadow: none;
+  background-color: #111;
+}
+
+/* Footer do modo preview */
+.preview-footer {
+  display: flex;
+  justify-content: center; /* Centraliza o botão */
+  padding-top: 20px;
+  border-top: 1px solid #333;
+  margin-top: 30px;
 }
 
 .question-item {
@@ -1556,58 +1499,111 @@ body {
 /* FIM DOS ESTILOS DE ESCALA CORRIGIDOS */
 /* ========================================================= */
 
-
-.report-modal {
-    max-width: 850px;
+/* CORREÇÃO DO BOTÃO DE PERFIL */
+.header-right {
+  display: flex;
+  align-items: center;
+  position: relative; 
 }
 
-.report-modal .status-tag.large {
-    font-size: 0.9em;
-    margin-top: 10px;
-    display: inline-block;
-    margin-left: 0; /* Remove margem extra */
+.profile-icon-btn {
+  background: transparent;
+  border: 1px solid transparent; 
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  width: 44px; 
+  height: 44px;
+  padding: 0;
 }
 
-.report-question-item {
-    background-color: rgba(31, 31, 31, 0.5);
-    border-radius: 8px;
-    padding: 15px;
-    margin-top: 20px;
-    border: 1px solid #444;
+.profile-icon-img {
+  width: 28px;
+  height: 28px;
+  transition: transform 0.2s ease, filter 0.2s ease; 
+  filter: drop-shadow(0 0 5px rgba(0,0,0,0.5)); 
 }
 
-.report-question-item h4 {
-    margin-bottom: 5px;
-    color: var(--color-text-light);
+.profile-icon-btn:hover {
+  background-color: var(--color-secondary-btn); 
+  transform: scale(1.1);
+  box-shadow: 0 0 15px var(--color-primary-shadow);
+  border-color: #7049fa; 
 }
 
-.report-question-item .q-type-tag {
-    margin-bottom: 15px;
-    display: inline-block;
+.profile-icon-btn:hover .profile-icon-img {
+    filter: drop-shadow(0 0 8px rgba(112, 73, 250, 0.7)); 
+    transform: scale(1.05);
 }
 
-/* NOVO ESTILO PARA O PLACEHOLDER DE DADOS REAIS */
-.real-data-placeholder {
-    padding: 10px;
-    border: 1px dashed #7049fa;
-    border-radius: 4px;
-    background-color: rgba(112, 73, 250, 0.1);
-    color: #a855f7;
-    font-style: italic;
-    font-size: 0.9em;
-    margin-top: 10px;
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 15px); 
+  right: 0;
+  background-color: var(--color-bg-card); 
+  border: 1px solid #333;
+  border-radius: 8px;
+  width: 180px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  padding: 8px;
+  z-index: 1100; 
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-.text-insights {
-    font-style: italic;
-    color: #7049fa;
-    margin-top: 15px;
-    padding-top: 10px;
-    border-top: 1px dashed #333;
-    font-size: 0.9em;
+.dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  padding: 12px 10px;
+  width: 100%;
+  text-align: left;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95em;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-.report-footer {
-    justify-content: center;
+.dropdown-btn i {
+  width: 20px; 
+  text-align: center;
+  font-size: 1.1em;
+  color: #888;
+  transition: color 0.2s;
+}
+
+.dropdown-btn:hover {
+  background-color: rgba(112, 73, 250, 0.15); 
+  color: var(--color-text-light); 
+}
+
+.dropdown-btn:hover i {
+  color: #7049fa; 
+}
+
+.dropdown-btn.logout:hover {
+  background-color: rgba(255, 77, 77, 0.15);
+  color: #ff4d4d;
+}
+.dropdown-btn.logout:hover i {
+  color: #ff4d4d;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>

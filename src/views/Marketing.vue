@@ -1,7 +1,10 @@
 <template>
   <div id="app">
-    <HeaderComponent /> <main class="container"></main>
     <main class="container">
+      
+      <button class="btn-voltar" @click="goBack" title="Voltar">
+        <img src="../assets/setas-para-a-esquerda.png" alt="Voltar">
+      </button>
       <section class="hero-card">
         <div class="hero-bg"></div>
         <div class="hero-overlay"></div>
@@ -124,11 +127,13 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 
-
-
-
+const goBack = () => {
+  router.go(-1); // Volta para a página anterior
+};
 
 const activeTab = ref(0);
 
@@ -157,6 +162,38 @@ const tabs = ref([
 </script>
 
 <style scoped>
+/* INÍCIO DA MUDANÇA: CSS do Botão Voltar (com imagem) */
+.btn-voltar {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex; 
+  align-items: center;
+  z-index: 3;
+  padding: 0;
+  margin-bottom: 2rem; 
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.btn-voltar img {
+  width: 24px; /* Tamanho do ícone */
+  height: 24px;
+  /* Efeito de brilho roxo sutil na imagem */
+  filter: drop-shadow(0 0 8px rgba(112, 73, 250, 0.7)); 
+  transition: all 0.3s ease;
+}
+
+.btn-voltar:hover {
+  transform: scale(1.1); /* Aumenta o botão */
+}
+
+.btn-voltar:hover img {
+  filter: drop-shadow(0 0 15px rgba(112, 73, 250, 1)); /* Brilho mais intenso */
+  transform: translateX(-3px); /* Efeito de "empurrar" */
+}
+/* FIM DA MUDANÇA */
+
+
 /* Reset */
 * {
   margin: 0;
@@ -178,7 +215,11 @@ const tabs = ref([
   margin-right: auto;
   padding-left: 2rem;
   padding-right: 2rem;
-  padding-top: 30px;
+  
+  /* INÍCIO DA CORREÇÃO: Adicionado padding-top para compensar o header fixo */
+  padding-top: 100px; /* 70px do header + 30px de espaço */
+  /* FIM DA CORREÇÃO */
+  
   padding-bottom: 5rem;
   box-sizing: border-box;
 }
@@ -224,7 +265,7 @@ const tabs = ref([
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 3rem;
-  text-align: center; /* LINHA ADICIONADA para centralizar o texto no grid */
+  text-align: center; 
 }
 
 .hero-text h1 {
@@ -242,8 +283,8 @@ const tabs = ref([
   color: #d0d0d0;
   font-size: 1.1rem;
   line-height: 1.6;
-  margin-left: auto;   /* LINHA ADICIONADA para centralizar o bloco do parágrafo */
-  margin-right: auto;  /* LINHA ADICIONADA para centralizar o bloco do parágrafo */
+  margin-left: auto;   
+  margin-right: auto;  
 }
 
 /* Cards Hero */
@@ -491,7 +532,7 @@ const tabs = ref([
 
 .tab-panel {
   display: flex;
-  text-align: center; /* LINHA MODIFICADA de 'left' para 'center' */
+  text-align: center; 
   max-width: 1100px;
   gap: 3rem;
   align-items: center;

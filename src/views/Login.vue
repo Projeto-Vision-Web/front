@@ -1,72 +1,75 @@
 <template lang="pug">
-  // Fundo full-screen
-  .fundo-completo
+  // INÍCIO DA MUDANÇA: Wrapper de Centralização
+  .login-page-wrapper 
+    // Fundo full-screen
+    .fundo-completo
 
-  // Conteúdo do login
-  section.registro-multi
-    // Botão de voltar no canto superior esquerdo (somente seta)
-    button.btn-voltar(@click="router.push('/')")
-      svg(width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-        polyline(points="15 18 9 12 15 6")
+    // Conteúdo do login
+    section.registro-multi
+      // Botão de voltar no canto superior esquerdo (somente seta)
+      button.btn-voltar(@click="router.push('/')")
+        svg(width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+          polyline(points="15 18 9 12 15 6")
 
-    .imagem-container
-      img(
-        src="@/assets/logocjl.png",
-        alt="Logo CJL",
-        loading="lazy"
-      )
+      .imagem-container
+        img(
+          src="@/assets/logocjl.png",
+          alt="Logo CJL",
+          loading="lazy"
+        )
 
-    .form-container
-      small.etapa-titulo Faça login na sua conta
+      .form-container
+        small.etapa-titulo Faça login na sua conta
 
-      form(@submit.prevent="logarUsuario")
-        .input-group
-          input(
-            type="email",
-            v-model="email",
-            :class="{ 'input-erro': erroEmail }",
-            placeholder=" ",
-            id="email"
-          )
-          label(for="email") Email
+        form(@submit.prevent="logarUsuario")
+          .input-group
+            input(
+              type="email",
+              v-model="email",
+              :class="{ 'input-erro': erroEmail }",
+              placeholder=" ",
+              id="email"
+            )
+            label(for="email") Email
 
-        span.mensagem-erro(v-if="erroEmail") O email é obrigatório.
+          span.mensagem-erro(v-if="erroEmail") O email é obrigatório.
 
-        .input-group
-          input(
-            :type="mostrarSenha ? 'text' : 'password'",
-            v-model="senha",
-            :class="{ 'input-erro': erroSenha }",
-            placeholder=" ",
-            id="senha"
-          )
-          label(for="senha") Senha
+          .input-group
+            input(
+              :type="mostrarSenha ? 'text' : 'password'",
+              v-model="senha",
+              :class="{ 'input-erro': erroSenha }",
+              placeholder=" ",
+              id="senha"
+            )
+            label(for="senha") Senha
 
-        span.mensagem-erro(v-if="erroSenha") A senha é obrigatória.
+          span.mensagem-erro(v-if="erroSenha") A senha é obrigatória.
 
-        .input-group
-          input(type="checkbox", id="mostrarSenha", v-model="mostrarSenha")
-          label(for="mostrarSenha") Mostrar senha
+          .input-group
+            input(type="checkbox", id="mostrarSenha", v-model="mostrarSenha")
+            label(for="mostrarSenha") Mostrar senha
 
-        section.botoes(style="display: flex; align-items: center; gap: 1rem; width: 100%;")
-          button(type="submit") Entrar
-          span.mensagem-erro(v-if="mensagemErro")= mensagemErro
+          section.botoes(style="display: flex; align-items: center; gap: 1rem; width: 100%;")
+            button(type="submit") Entrar
+            span.mensagem-erro(v-if="mensagemErro")= mensagemErro
 
-  // Modal Esqueci a senha
-  .modal-esqueci(v-if="mostrarModalEsqueci")
-    .modal-conteudo
-      button.close(@click="fecharModalEsqueci") ×
-      .icone-lock
-        .circulo-icone
-          svg(width="48" height="48" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round")
-            rect(x="3" y="11" width="18" height="11" rx="2" ry="2")
-            path(d="M7 11V7a5 5 0 0 1 10 0v4")
+    // Modal Esqueci a senha
+    .modal-esqueci(v-if="mostrarModalEsqueci")
+      .modal-conteudo
+        button.close(@click="fecharModalEsqueci") ×
+        .icone-lock
+          .circulo-icone
+            svg(width="48" height="48" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round")
+              rect(x="3" y="11" width="18" height="11" rx="2" ry="2")
+              path(d="M7 11V7a5 5 0 0 1 10 0v4")
 
-      p.titulo Problemas ao iniciar sessão?
-      p.descricao Insira o seu CPF ou E-mail.
-      input.input-recuperar(type="text", placeholder="CPF ou E-mail", v-model="emailRecuperar")
-      button.btn-enviar(@click="enviarLigacao") Enviar
-      hr
+        p.titulo Problemas ao iniciar sessão?
+        p.descricao Insira o seu CPF ou E-mail.
+        input.input-recuperar(type="text", placeholder="CPF ou E-mail", v-model="emailRecuperar")
+        button.btn-enviar(@click="enviarLigacao") Enviar
+        hr
+  // FIM DA MUDANÇA: Wrapper de Centralização
 </template>
 
 
@@ -98,7 +101,13 @@ const logarUsuario = async () => {
   try {
     localStorage.removeItem('token')
 
-    const response = await login(email.value, senha.value)
+    // Lembrete: Esta é uma simulação.
+    // A equipe de backend substituirá esta chamada 'login()'
+    // const response = await login(email.value, senha.value)
+    
+    // Simulação de uma resposta de sucesso para teste
+    const response = { token: 'simulated-token-12345' }
+
 
     if (!response || !response.token) {
       mensagemErro.value = 'E-mail ou senha incorretos.'
@@ -107,14 +116,18 @@ const logarUsuario = async () => {
 
     localStorage.setItem('token', response.token)
     window.dispatchEvent(new Event('atualizarUsuario'))
-    router.push('/plataforma')
+    
+    router.push('/form-admin') // Redirecionamento corrigido
 
   } catch (error) {
-    if (error.response?.status === 401) {
-      mensagemErro.value = 'E-mail ou senha incorretos.'
-    } else {
-      mensagemErro.value = 'Erro no login. Tente novamente mais tarde.'
-    }
+    // Tratamento de erro (se a chamada real falhar)
+    // if (error.response?.status === 401) {
+    //   mensagemErro.value = 'E-mail ou senha incorretos.'
+    // } else {
+    //   mensagemErro.value = 'Erro no login. Tente novamente mais tarde.'
+    // }
+    console.error("Erro na simulação de login:", error)
+    mensagemErro.value = 'Erro na simulação de login.'
   }
 }
 
@@ -134,19 +147,28 @@ function enviarLigacao() {
 }
 </script>
 <style>
+/* INÍCIO DA MUDANÇA: Estilos de Centralização */
+.login-page-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh; /* Ocupa a altura inteira da tela */
+}
+/* FIM DA MUDANÇA */
+
 .btn-voltar {
   position: absolute;
   top: 16px;
   left: 16px;
-  background: transparent;   /* fundo totalmente transparente */
-  border: none;              /* sem borda */
+  background: transparent;   
+  border: none;              
   cursor: pointer;
   display: flex;
   align-items: center;
   z-index: 3;
   padding: 0;
 
-  /* Garantir que não haja sombra de forma abrangente */
   box-shadow: none !important;
   -webkit-box-shadow: none !important;
   -moz-box-shadow: none !important;
@@ -154,33 +176,28 @@ function enviarLigacao() {
   -webkit-appearance: none !important;
   -moz-appearance: none !important;
   appearance: none !important;
-  -webkit-tap-highlight-color: transparent; /* Chrome/Safari */
+  -webkit-tap-highlight-color: transparent; 
 }
 
-/* Remover sombra ao focar no botão */
 .btn-voltar:focus {
   outline: none !important;
   box-shadow: none !important;
 }
 
-/* Remover sombra ao clicar (active) */
 .btn-voltar:active {
   outline: none !important;
   box-shadow: none !important;
 }
 
-/* Remover sombra ao passar o mouse */
 .btn-voltar:hover {
   box-shadow: none !important;
 }
 
-/* Remover sombra ao focar visivelmente (teclado) */
 .btn-voltar:focus-visible {
   outline: none !important;
   box-shadow: none !important;
 }
 
-/* SVG da seta */
 .btn-voltar svg {
   stroke: white;
   width: 16px;
@@ -188,12 +205,10 @@ function enviarLigacao() {
   transition: stroke 0.2s ease;
 }
 
-/* Mudança de cor só da seta, nada mais */
 .btn-voltar:hover svg {
   stroke: #a8a8a8;
 }
 
-/* Firefox: remove borda interna */
 .btn-voltar::-moz-focus-inner {
   border: 0;
 }
@@ -207,7 +222,7 @@ function enviarLigacao() {
     max-width: 100%;
     height: auto;
     min-height: 430px;
-    margin-top: 50px !important; /* força a margem no mobile */
+    margin-top: 50px !important; 
   }
 
   .imagem-container {
@@ -216,18 +231,18 @@ function enviarLigacao() {
 }
 
 .fundo-completo {
-  position: fixed;        /* fixa na tela */
+  position: fixed;        
   top: 0;
   left: 0;
-  width: 100vw;           /* largura total da tela */
-  height: 100vh;          /* altura total da tela */
-  background-color: rgba(0, 0, 0, 0.7); /* fundo sem interferir no conteúdo */
-  z-index: 1;           /* atrás dos modais mas acima do resto */
+  width: 100vw;           
+  height: 100vh;          
+  background-color: rgba(0, 0, 0, 0.7); 
+  z-index: 1;           
 }
 
 .circulo-icone {
-  border: 2px solid white;     /* Borda branca */
-  border-radius: 50%;          /* Formato de círculo */
+  border: 2px solid white;     
+  border-radius: 50%;          
   padding: 1rem;
   display: flex;
   align-items: center;
@@ -235,7 +250,7 @@ function enviarLigacao() {
   width: 80px;
   height: 80px;
   margin: 0 auto 1rem auto;
-  background-color: transparent; /* Sem fundo */
+  background-color: transparent; 
 }
 
 .circulo-icone svg {
@@ -400,7 +415,7 @@ body, * {
 
 .registro-multi {
   max-width: 900px;
-  margin: 6rem auto 2rem;
+  margin: 0 auto 2rem; /* Removido margin-top */
   padding: 48px;
   background-color: #222222;
   border-radius: 16px;
@@ -410,13 +425,12 @@ body, * {
   user-select: none;
   height: auto;
   position: relative;
-  margin-top: 100px;
   display: flex;
   gap: 40px;
   align-items: center;
   max-height: 600px;
-  position: relative; /* necessário para z-index funcionar */
-  z-index: 2; /* acima do fundo */
+  position: relative; 
+  z-index: 2; 
 }
 
 .imagem-container {
