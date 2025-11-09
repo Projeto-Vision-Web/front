@@ -1,15 +1,18 @@
-<!-- src/layouts/DefaultLayout.vue -->
 <template>
   <div>
-    <Navbar />
-    <slot />
-  </div>
+    <MainNavbar />
+    <main class="content-wrapper">
+      <slot />
+    </main>
+    </div>
 </template>
 
 <script setup>
-import Navbar from '../components/Navbar.vue'
+import MainNavbar from '../components/MainNavbar.vue' 
 </script>
 
 <style scoped>
-/* estilos globais do layout, se necessário */
+.content-wrapper {
+  /* padding-top: 100px;  <-- ESTA LINHA FOI REMOVIDA */
+}
 </style>
